@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Go AI Chatbot</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        #log {
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            padding: 12px;
+            height: 300px;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>AI Chatbot (Go + WebSocket)</h1>
+    <div id="log"></div> <input id="input" placeholder="Type a message..." style="width:70%" /> <button
+        id="send">Send</button>
+    <script> const log = document.getElementById('log'); const input = document.getElementById('input'); const sendBtn = document.getElementById('send'); const ws = new WebSocket(`${location.origin.replace(/^http/, "ws")}/ws`); ws.onopen = () => appendLog("[connected]\n"); ws.onmessage = (ev) => { const msg = JSON.parse(ev.data); if (msg.type === "ai_delta") { appendLog(msg.payload); } else if (msg.type === "ai_done") { appendLog("\n\n[response complete]\n\n"); } else if (msg.type === "error") { appendLog("\n[ERROR] " + msg.payload + "\n"); } }; sendBtn.onclick = sendMessage; input.addEventListener("keydown", (e) => { if (e.key === "Enter") sendMessage(); }); function sendMessage() { const text = input.value.trim(); if (!text) return; appendLog("\nYou: " + text + "\n"); ws.send(JSON.stringify({ type: "user_message", payload: text })); input.value = ""; } function appendLog(s) { log.textContent += s; log.scrollTop = log.scrollHeight; } </script>
+</body>
+
+</html>
